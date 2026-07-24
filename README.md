@@ -32,6 +32,31 @@ Add to `~/.zshrc`:
 eval "$(haunt init zsh)"
 ```
 
+#### Cached eval (faster shell startup)
+
+`haunt init zsh` output only changes when the `haunt` binary is updated. You can cache it to avoid the subprocess on every shell start:
+
+```zsh
+# Cache eval output from slow tools — regenerates when the binary updates
+_cached_eval() {
+    local cache_dir="$HOME/.zsh/cache"
+    local cmd_name="${1##*/}"
+    local cache_file="$cache_dir/$cmd_name"
+    local bin_path="${1}"
+
+    [[ -x "$bin_path" ]] || return 0
+    if [[ ! -f "$cache_file" ]] || [[ "$bin_path" -nt "$cache_file" ]]; then
+        mkdir -p "$cache_dir"
+        "${@}" > "$cache_file" 2>/dev/null
+    fi
+    source "$cache_file"
+}
+
+_cached_eval "$(command -v haunt)" init zsh
+```
+
+This sources a cached copy from `~/.zsh/cache/haunt` and only regenerates it when the binary's mtime changes (e.g. after `go install`). The `_cached_eval` function works for any tool that outputs shell code — just call it the same way for other `eval "$(… init)"` patterns.
+
 ## Usage
 
 Once the shell integration is loaded, commands are recorded automatically. Press **Ctrl+G** to search history scoped to your current directory.
