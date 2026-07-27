@@ -42,12 +42,15 @@ var searchCmd = &cobra.Command{
 			return nil
 		}
 
-		selected, err := fzf(results)
-		if err != nil {
-			return err
+		if hasFzf() {
+			selected, err := fzf(results)
+			if err != nil {
+				return err
+			}
+			fmt.Print(selected)
+		} else {
+			fmt.Print(strings.Join(results, "\n"))
 		}
-
-		fmt.Print(selected)
 		return nil
 	},
 }
@@ -63,8 +66,13 @@ func search(store *db.Store, scope config.Scope, cwd string) ([]string, error) {
 	}
 }
 
+func hasFzf() bool {
+	_, err := exec.LookPath("fzf")
+	return err == nil
+}
+
 func fzf(items []string) (string, error) {
-	cmd := exec.Command("fzf", "--no-sort", "--exact", "--prompt", "haunt> ")
+	cmd := exec.Command("fzf", "--no-sort", "--exact", "--prompt", "haunt> ", "--height", "40%", "--reverse")
 	cmd.Stdin = strings.NewReader(strings.Join(items, "\n"))
 	cmd.Stderr = os.Stderr
 
