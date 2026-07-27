@@ -8,8 +8,8 @@ function __haunt_search
     set -l result (haunt search)
     if test -n "$result"
         commandline -r -- $result
-        commandline -f repaint
     end
+    commandline -f repaint
 end
 
 bind {{KEYBINDING}} __haunt_search

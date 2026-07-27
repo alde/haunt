@@ -19,8 +19,8 @@ __haunt_search() {
     if [[ -n "$result" ]]; then
         BUFFER="$result"
         CURSOR=${#BUFFER}
-        zle redisplay
     fi
+    zle reset-prompt
 }
 zle -N __haunt_search
 
