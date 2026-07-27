@@ -95,10 +95,9 @@ func TestSearchGitRoot(t *testing.T) {
 	store.Record("go vet", "/repo/pkg/sub", 0, 1002)
 	store.Record("unrelated", "/other", 0, 1003)
 
-	results, err := store.queryDistinct(
-		`WHERE cwd = ? OR cwd LIKE ?`, 100,
-		"/repo", "/repo/%",
-	)
+	results, err := store.search(func(e *Entry) bool {
+		return e.Cwd == "/repo" || len(e.Cwd) > len("/repo") && e.Cwd[:len("/repo")+1] == "/repo/"
+	}, 100)
 	if err != nil {
 		t.Fatalf("search: %v", err)
 	}
@@ -150,7 +149,7 @@ func TestAncestorDirs(t *testing.T) {
 	}
 }
 
-func TestSearchAncestorsQuery(t *testing.T) {
+func TestSearchAncestors(t *testing.T) {
 	store := openTestStore(t)
 
 	store.Record("repo-root-cmd", "/project", 0, 1000)
@@ -158,8 +157,13 @@ func TestSearchAncestorsQuery(t *testing.T) {
 	store.Record("deep-cmd", "/project/src/pkg/api", 0, 1002)
 	store.Record("unrelated", "/other", 0, 1003)
 
-	dirs := ancestorDirsWithCeiling("/project/src/pkg/api", "/project")
-	results, err := store.searchDirs(dirs, 100)
+	dirs := make(map[string]bool)
+	for _, d := range ancestorDirsWithCeiling("/project/src/pkg/api", "/project") {
+		dirs[d] = true
+	}
+	results, err := store.search(func(e *Entry) bool {
+		return dirs[e.Cwd]
+	}, 100)
 	if err != nil {
 		t.Fatalf("search: %v", err)
 	}
