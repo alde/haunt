@@ -12,7 +12,7 @@ Global history (Ctrl+R) stays untouched. Haunt adds a separate keybinding (Ctrl+
 go install github.com/alde/haunt@latest
 ```
 
-Requires [fzf](https://github.com/junegunn/fzf) for interactive search.
+Optionally install [fzf](https://github.com/junegunn/fzf) for interactive fuzzy search. Without it, haunt falls back to printing matching commands to stdout.
 
 ## Shell setup
 
@@ -92,7 +92,7 @@ All fields are optional — sensible defaults are used for anything missing.
 
 ## How it works
 
-1. A shell hook records every command with its working directory and timestamp into a SQLite database.
+1. A shell hook records every command with its working directory and timestamp into a local bbolt database.
 2. When you press the keybinding, haunt queries the database using the current scope mode and pipes results through fzf.
 3. The selected command is placed on your command line, ready to run or edit.
 
